@@ -45,16 +45,18 @@ class PlayerControllerMinimax(PlayerController):
             node = Node(message=msg, player=0)
 
             # Possible next moves: "stay", "left", "right", "up", "down"
-            best_move = self.search_best_next_move(initial_tree_node=node)
+            best_move = 0
+            for max_depth in range (1, 5):
+                _, best_move = self.search_best_next_move(node, max_depth)
 
             # Execute next action
-            self.sender({"action": best_move, "search_time": None})
+            self.sender({"action": ACTION_TO_STR[best_move], "search_time": None})
 
     def heuristic(self, node: Node):
         a_score, b_score = node.state.get_player_scores()
         return a_score - b_score
 
-    def search_best_next_move(self, node: Node):
+    def search_best_next_move(self, node: Node, depth: int):
         """
         Use minimax (and extensions) to find best possible next move for player 0 (green boat)
         :param node: Initial game tree node
@@ -66,23 +68,28 @@ class PlayerControllerMinimax(PlayerController):
 
         node.compute_and_get_children()
 
-        if len(node.state.get_fish_positions()) == 0:
-            return heuristic(node)
-        else:
+        if depth == 0 or len(node.state.get_fish_positions()) == 0:
+            return self.heuristic(node), None
             # green boat
-            if node.player == 0:
-                best_possible = -math.inf
-                for child in node.children:
-                    v = search_best_next_move(child)
-                    best_possible = max(best_possible, v)
-                return best_possible
-            # red boat
-            else:
-                best_possible = math.inf
-                for child in node.children:
-                    v = search_best_next_move(child)
-                    best_possible = min(best_possible, v)
-                return best_possible
+        if node.state.get_player() == 0:
+            best_possible = -math.inf
+            best_move = 0
+            for child in node.children:
+                v, _ = self.search_best_next_move(child, depth-1)
+                if best_possible < v:
+                    best_possible = v
+                    best_move = child.move
+            return best_possible, best_move
+        # red boat
+        else:
+            best_possible = math.inf
+            best_move = 0
+            for child in node.children:
+                v, _ = self.search_best_next_move(child, depth-1)
+                if best_possible > v:
+                    best_possible = v
+                    best_move = child.move
+            return best_possible, best_move
 
-        random_move = random.randrange(5)
-        return ACTION_TO_STR[random_move]
+        # random_move = random.randrange(5)
+        # return ACTION_TO_STR[random_move]
