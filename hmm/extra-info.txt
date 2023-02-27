@@ -1,0 +1,9 @@
+Assignment page:
+https://canvas.kth.se/courses/36070/assignments/225745?module_item_id=569432
+
+Kattis:
+https://kth.kattis.com/problems/kth.ai.hmm0
+https://kth.kattis.com/problems/kth.ai.hmm1
+https://kth.kattis.com/problems/kth.ai.hmm2
+https://kth.kattis.com/problems/kth.ai.hmm3
+https://kth.kattis.com/problems/kth.ai.hmm
