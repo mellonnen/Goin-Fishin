@@ -18,8 +18,17 @@ def create(num_rows, num_cols, data):
 
 
 def print_m(matrix):
+    print(f"[{len(matrix)} x {len(matrix[0])}]")
     for row in matrix:
-        print("\t".join(map(str, row)))
+        print("|", "\t".join(map(str, row)), "|")
+
+
+def print_output(matrix):
+    num_rows = len(matrix)
+    num_cols = len(matrix[0])
+    print(
+        f"{num_rows} {num_cols} {' '.join([str(round(col, 3)) for row in matrix for col in row])}"
+    )
 
 
 def read_row_col_data(line):
