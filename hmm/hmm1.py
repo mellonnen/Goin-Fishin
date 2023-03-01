@@ -13,26 +13,41 @@ if __name__ == "__main__":
             matrices.append(matrix.read_row_col_data(line))
         else:
             # 1xN matrix of the sequence of emissions.
-            seq = line.split()
+            seq = list(map(int, line.split()))
             matrices.append(seq[1:])
 
     # Transition matrix.
     T = matrices[0]
     # Emission matrix.
-    E = matrices[1]
+    B = matrices[1]
     # Initial state probability distribution.
     P = matrices[2]
-
     # Sequence of emissions.
     S = matrices[3]
 
-    # Multiply transition matrix (T) with our current estimate of states (P).
-    # P * T
-    P_x_T = matrix.multiply(P, T)
+    N_hidden_states = len(P[0])
+    N_time_steps = len(T)
 
-    # Multiply result matrix (PxT) with the observation matrix (E).
-    # This gives us the next emission probability matrix.
-    # PxT * E
-    PxT_x_E = matrix.multiply(P_x_T, E)
+    # alpha_ts contains alpha values for each time step, t. Every outer index is a time step t,
+    # and the arrays contain the alpha values (i.e. probabilities of being in each of the hidden states) of that time step.
+    alpha_ts = [[] for _ in range(0, N_time_steps)]
+    for i in range(N_hidden_states):
+        o1 = S[1]
+        piᵢ = P[0][i]
+        bᵢ_o1 = B[i][o1]
+        alpha_1 = bᵢ_o1 * piᵢ
+        alpha_ts[0].append(alpha_1)
 
-    matrix.print_m(S)
+    # with alpha_1 initialized, calculate the rest.
+    for t in range(1, N_time_steps):
+        for i in range(N_hidden_states):
+            oₜ = S[t]
+            bᵢ_oₜ = B[i][oₜ]
+            # marginalize over the probability of having been in any other state at t − 1
+            previous_states_probability = 0
+            for j in range(N_hidden_states):
+                previous_states_probability += T[j][i] * alpha_ts[t - 1][j]
+            # multiply this estimate with the matching observation probability
+            alpha_ts[t].append(bᵢ_oₜ * previous_states_probability)
+
+    matrix.print_m(alpha_ts)
