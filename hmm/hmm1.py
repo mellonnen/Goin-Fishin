@@ -26,13 +26,13 @@ if __name__ == "__main__":
     S = matrices[3]
 
     N_hidden_states = len(P[0])
-    N_time_steps = len(T)
+    N_time_steps = len(S)
 
     # alpha_ts contains alpha values for each time step, t. Every outer index is a time step t,
     # and the arrays contain the alpha values (i.e. probabilities of being in each of the hidden states) of that time step.
-    alpha_ts = [[] for _ in range(0, N_time_steps)]
+    alpha_ts = [[] for _ in range(N_time_steps)]
     for i in range(N_hidden_states):
-        o1 = S[1]
+        o1 = S[0]
         piᵢ = P[0][i]
         bᵢ_o1 = B[i][o1]
         alpha_1 = bᵢ_o1 * piᵢ
@@ -40,14 +40,14 @@ if __name__ == "__main__":
 
     # with alpha_1 initialized, calculate the rest.
     for t in range(1, N_time_steps):
-        for i in range(N_hidden_states):
+        for j in range(N_hidden_states):
             oₜ = S[t]
-            bᵢ_oₜ = B[i][oₜ]
+            bᵢ_oₜ = B[j][oₜ]
             # marginalize over the probability of having been in any other state at t − 1
-            previous_states_probability = 0
-            for j in range(N_hidden_states):
-                previous_states_probability += T[j][i] * alpha_ts[t - 1][j]
-            # multiply this estimate with the matching observation probability
-            alpha_ts[t].append(bᵢ_oₜ * previous_states_probability)
+            marginalized_probability = sum(
+                (alpha_ts[t - 1][i] * T[i][j] * bᵢ_oₜ) for i in range(N_hidden_states)
+            )
+            alpha_ts[t].append(marginalized_probability)
 
-    matrix.print_m(alpha_ts)
+    probability = sum((alpha_ts[N_time_steps - 1][h]) for h in range(N_hidden_states))
+    print(probability)
